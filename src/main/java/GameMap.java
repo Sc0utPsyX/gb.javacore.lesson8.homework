@@ -8,12 +8,14 @@ public class GameMap extends JPanel {
     public static final int MODE_VS_AI = 0;
     public static final int MODE_VS_HUMAN = 1;
     private static final int DOT_HUMAN = 1;
+    private static final int DOT_HUMAN2 = 3;
     private static final int DOT_AI = 2;
     private static final int DOT_EMPTY = 0;
     private static final int DOT_PADDING = 7;
     private static final int STATE_DRAW = 0;
     private static final int STATE_WIN_HUMAN = 1;
     private static final int STATE_WIN_AI = 2;
+    private static final int STATE_WIN_HUMAN2 = 3;
 
     public static final Random random = new Random();
     private int stateGameOver;
@@ -28,6 +30,9 @@ public class GameMap extends JPanel {
     private int gameMode;
     private int playerNumTurn;
 
+    public void setFirstPlayerTypeO(){
+        this.playerNumTurn = 0;
+    };
 
     public GameMap() {
         isInitialized = false;
@@ -41,11 +46,18 @@ public class GameMap extends JPanel {
     }
 
     private void update(MouseEvent e) {
+        if (gameMode == GameMap.MODE_VS_AI) playerVersusAi(e);
+        else if (playerNumTurn == 0) {
+            player0Turn(e);
+        } else player1Turn(e);
+    }
+
+    private void playerVersusAi(MouseEvent e){
         if (isGameOver || !isInitialized) {
             return;
         }
 
-        if (!playerTurn(e)) {
+        if (!playerTurn(e, DOT_HUMAN)) {
             return;
         }
 
@@ -61,14 +73,45 @@ public class GameMap extends JPanel {
         }
     }
 
-    private boolean playerTurn(MouseEvent event) {
+    private void player0Turn(MouseEvent e){
+        if (isGameOver || !isInitialized) {
+            return;
+        }
+
+        if (!playerTurn(e, DOT_HUMAN)) {
+            return;
+        }
+
+        if (gameCheck(DOT_HUMAN, STATE_WIN_HUMAN)) {
+            return;
+        }
+        playerNumTurn = 1;
+        repaint();
+    }
+    private void player1Turn(MouseEvent e){
+        if (isGameOver || !isInitialized) {
+            return;
+        }
+
+        if (!playerTurn(e, DOT_HUMAN2)) {
+            return;
+        }
+
+        if (gameCheck(DOT_HUMAN2, STATE_WIN_HUMAN2)) {
+            return;
+        }
+        playerNumTurn = 0;
+        repaint();
+    }
+
+    private boolean playerTurn(MouseEvent event, int dot) {
         int cellX = event.getX() / cellWidth;
         int cellY = event.getY() / cellHeight;
 
         if (!isCellValid(cellY, cellX) || !isCellEmpty(cellY, cellX)) {
             return false;
         }
-        field[cellY][cellX] = DOT_HUMAN;
+        field[cellY][cellX] = dot;
         repaint();
         return true;
     }
@@ -106,19 +149,22 @@ public class GameMap extends JPanel {
                 if (isCellEmpty(y, x)) {
                     continue;
                 }
-
+                g.setColor(Color.BLUE);
                 if (field[y][x] == DOT_HUMAN) {
-                    g.setColor(Color.BLUE);
-                    g.fillOval(x * cellWidth + DOT_PADDING,
+
+                    g.drawOval(x * cellWidth + DOT_PADDING,
                             y * cellHeight + DOT_PADDING,
                             cellWidth - DOT_PADDING * 2,
                             cellHeight - DOT_PADDING * 2);
                 } else {
-                    g.setColor(Color.magenta);
-                    g.fillRect(x * cellWidth + DOT_PADDING,
-                            y * cellHeight + DOT_PADDING,
-                            cellWidth - DOT_PADDING * 2,
-                            cellHeight - DOT_PADDING * 2);
+                    g.drawLine(x * cellWidth,
+                            y * cellHeight,
+                            x * cellWidth + cellWidth,
+                            y * cellHeight + cellHeight);
+                    g.drawLine(x * cellWidth + cellWidth,
+                            y * cellHeight,
+                            x * cellWidth,
+                            y * cellHeight + cellHeight);
                 }
             }
         }
@@ -149,6 +195,7 @@ public class GameMap extends JPanel {
             case STATE_DRAW -> g.drawString("DRAW", getWidth() / 4, getHeight() / 2);
             case STATE_WIN_HUMAN -> g.drawString("HUMAN WIN", getWidth() / 4, getHeight() / 2);
             case STATE_WIN_AI -> g.drawString("AI WIN", getWidth() / 4, getHeight() / 2);
+            case STATE_WIN_HUMAN2 -> g.drawString("HUMAN 2 WIN", getWidth() / 4, getHeight() / 2);
         }
     }
 
