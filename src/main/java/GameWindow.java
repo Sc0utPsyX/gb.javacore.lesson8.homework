@@ -27,8 +27,10 @@ public class GameWindow extends JFrame {
         setVisible(true);
     }
 
+
     public void startGame(int gameMode, int fieldSize, int winLength) {
         gameMap.startNewGame(gameMode, fieldSize, winLength);
+        gameMap.setFirstPlayerTypeO(); //первый игрок ходит ноликами
         System.out.printf("Mode: %d, Size: %d length: %d\n", gameMode, fieldSize, winLength);
     }
 }
